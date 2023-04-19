@@ -1,28 +1,20 @@
 import fs from 'fs';
-import pkg from 'jsonwebtoken'
-const {verify} = pkg
 
 export function log(req, res, next) {
     const date = new Date();
-    let id = undefined;
-    let level = undefined;
+    let id = req.session.userId || '[ NOT LOGGED ]';
 
+    // data format
     const day = date.getDate();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
 
-    verify(req.headers['x-access-token'], 'heheBoy', (err, decoded) => {
+    // string to append in file
+    const log = `[${date.toLocaleString()}] ID: ${id} made a new request\nmethod: ${req.method} in: ${req.url}\n`;
+    fs.appendFile(`logs/${day}-${month}-${year}.log`, log, (err) => {
         if (err)
-            id = '[ NOT AUTHENTICATED ]';
-        else
-            id = decoded.userId;
-
-        const log = `[${date.toLocaleString()}] ID: ${id} made a new request\nmethod: ${req.method} in: ${req.url}\n`;
-        fs.appendFile(`logs/${day}-${month}-${year}.log`, log, (err) => {
-            if (err)
-                throw err;
-        });
-
-        next();
+            throw err;
     });
+
+    next();
 }

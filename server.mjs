@@ -17,9 +17,6 @@ app.use(bodyParser.urlencoded({
     extended: true
 }))
 
-// loggler middleware
-app.use(log)
-
 // session
 app.use(session({
     secret: 'eyebrowRaise',
@@ -32,6 +29,9 @@ app.use(session({
     }
 }))
 
+
+// loggler middleware
+app.use(log)
 
 // user register route
 app.use('/register', register)

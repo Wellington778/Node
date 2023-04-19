@@ -4,41 +4,39 @@ import bcrypt from 'bcrypt'
 import pkg from 'jsonwebtoken'
 const { sign, verify } = pkg
 
-
-
 const SECRET = 'heheBoy'
 
+
+
 export function verifyJwt(req, res, next) {
-    // const token = req.headers['x-access-token']
     const token = req.session.jwtToken
-    // console.log(req.session)
     if (!token) {
         return res.status(401).json({ message: 'no token' })
     }
     verify(token, SECRET, (err, decoded) => {
         if (err) {
             return res.status(500).json({ auth: false, message: `failed to autenticate token || ${err}` })
-
         }
-
-        req.userId = decoded.id
 
         next()
     })
-    // res.json(req.headers)
 }
 
-export async function basicAuth(req, res) {
+export async function adminAuth(req, res) {
     const { name, pass } = auth(req)
 
     searchAdmin(name)
-        .then(data => data[0])
-        .then(async ({ id, name, password }) => {
+        .then(data => data[0])// return the object from array
+        .then(async ({ id, name, password }) => { // destructuring object
+            
+            // await the verification of password
             const verify = await bcrypt.compare(pass, password)
             if (!verify) return Promise.reject('Dados invalidos')
 
+            // if pass, create token
             const token = sign({ id }, SECRET, { expiresIn: 14400 })
 
+            // assign the variables to session
             req.session.jwtToken = token
             req.session.userId = id
             req.session.username = name
@@ -52,5 +50,5 @@ export async function basicAuth(req, res) {
 
 export function logout(req, res, next) {
         req.session.destroy()
-        res.status(200).json({ message: 'admin logged out' })
+        return res.status(200).json({ message: 'admin logged out' })
 }
